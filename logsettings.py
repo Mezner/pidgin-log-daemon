@@ -6,3 +6,6 @@ LOG_DIRECTORY=""
 #
 # A token can be generated at https://www.evernote.com/api/DeveloperToken.action
 DEVELOPER_TOKEN=""
+
+# The notebook that notes will be added to.
+LOG_NOTEBOOK_NAME="Pidgin Log"

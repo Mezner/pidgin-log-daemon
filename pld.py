@@ -39,6 +39,7 @@ class PythonLogImporter():
         self.developer_token = developer_token
         self.log_directory = log_directory
         self.PERMITTED_TAGS = ['a', 'abbr','acronym','address','area','b','bdo','big','blockquote','br','caption','center','cite','code','col','colgroup','dd','del','dfn','div','dl','dt','em','font','h1','h2','h3','h4','h5','h6','hr','i','img','ins','kbd','li','map','ol','p','pre','q','s','samp','small','span','strike','strong','sub','sup','table','tbody','td','tfoot','th','thead','title','tr','tt','u','ul','var','xmp', 'br/']
+        self.logNotebookName = LOG_NOTEBOOK_NAME
 
     def startup(self):
         evernoteHost = "www.evernote.com"
@@ -61,7 +62,7 @@ class PythonLogImporter():
         notebooks = self.noteStore.listNotebooks(self.developer_token)
         logNotebookExists = False
         for notebook in notebooks:
-            if notebook.name == "Pidgin Log":
+            if notebook.name == self.logNotebookName:
                 logNotebookExists = True
                 self.logNotebook = notebook
                 break
