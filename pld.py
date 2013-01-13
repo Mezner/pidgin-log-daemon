@@ -26,7 +26,8 @@ class PythonLogDaemon():
         self.pidfile_timeout = 5
         self.log_directory = LOG_DIRECTORY
         self.developer_token = DEVELOPER_TOKEN
-        self.poll_interval = 10
+        self.poll_interval = POLL_INTERVAL
+
     def run(self):
         importer = PythonLogImporter(self.developer_token, self.log_directory)
         importer.startup()

@@ -1,6 +1,7 @@
 # Directory in which your Pidgin logs are. Usually this is a .purple directory
 # under your user's home location.
 LOG_DIRECTORY=""
+
 # Developer token provided by Evernote. This gives full access to your Evernote
 # account and should be secured as if it were your password.
 #
@@ -9,3 +10,6 @@ DEVELOPER_TOKEN=""
 
 # The notebook that notes will be added to.
 LOG_NOTEBOOK_NAME="Pidgin Log"
+
+# Polling interval in seconds
+POLL_INTERVAL=10
