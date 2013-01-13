@@ -70,7 +70,7 @@ class PythonLogImporter():
             print "Pidgin log notebook exists."
         else:
             print "Pidgin log notebook does not exist. Creating..."
-            self.logNotebook = Types.Notebook(name="Pidgin Log")
+            self.logNotebook = Types.Notebook(name=self.logNotebookName)
             self.logNotebook = self.noteStore.createNotebook(self.developer_token, logNotebook)
 
     def import_logs(self):
