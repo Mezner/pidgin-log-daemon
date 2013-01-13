@@ -87,15 +87,7 @@ class PythonLogImporter():
         print filePath
         soup = BeautifulSoup(open(filePath))
         noteTitle = soup.title.get_text()
-        cleanLog = bleach.clean(soup.body.prettify(), tags=self.PERMITTED_TAGS, attributes={'*': ['color', 'size']}, strip=True)
-        cleanLog = "<div>" + cleanLog + "</div>"
-        soup = BeautifulSoup(cleanLog)
-        noteContent = '<?xml version="1.0" encoding="UTF-8"?>'
-        noteContent += '<!DOCTYPE en-note SYSTEM ' \
-            '"http://xml.evernote.com/pub/enml2.dtd">'
-        noteContent += '<en-note>'
-        noteContent += str(soup.body.div.extract())
-        noteContent += '</en-note>'
+        noteContent = self.__get_content_from_soup(soup)
         noteFilter = NoteStore.NoteFilter(notebookGuid=self.logNotebook.guid, words='intitle:"' + noteTitle + '"')
         existingNotes = self.noteStore.findNotes(self.developer_token, noteFilter, 0, 1)
         if existingNotes.totalNotes > 0:
@@ -115,6 +107,18 @@ class PythonLogImporter():
         else:
             note = self.noteStore.createNote(self.developer_token, note)
             print "Created note: ", note.guid
+
+    def __get_content_from_soup(self, soup):
+        cleanLog = bleach.clean(soup.body.prettify(), tags=self.PERMITTED_TAGS, attributes={'*': ['color', 'size']}, strip=True)
+        cleanLog = "<div>" + cleanLog + "</div>"
+        soup = BeautifulSoup(cleanLog)
+        noteContent = '<?xml version="1.0" encoding="UTF-8"?>'
+        noteContent += '<!DOCTYPE en-note SYSTEM ' \
+            '"http://xml.evernote.com/pub/enml2.dtd">'
+        noteContent += '<en-note>'
+        noteContent += str(soup.body.div.extract())
+        noteContent += '</en-note>'
+        return noteContent
 
 logDaemon = PythonLogDaemon()
 daemonRunner = runner.DaemonRunner(logDaemon)
