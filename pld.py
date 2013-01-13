@@ -80,38 +80,41 @@ class PythonLogImporter():
                 extension = os.path.splitext(filename)[-1].lower()
                 if extension == '.html':
                     filePath = os.path.join(root, filename)
-                    print filePath
-                    soup = BeautifulSoup(open(filePath))
-                    noteTitle = soup.title.get_text()
-                    cleanLog = bleach.clean(soup.body.prettify(), tags=self.PERMITTED_TAGS, attributes={'*': ['color', 'size']}, strip=True)
-                    cleanLog = "<div>" + cleanLog + "</div>"
-                    soup = BeautifulSoup(cleanLog)
-                    noteContent = '<?xml version="1.0" encoding="UTF-8"?>'
-                    noteContent += '<!DOCTYPE en-note SYSTEM ' \
-                        '"http://xml.evernote.com/pub/enml2.dtd">'
-                    noteContent += '<en-note>'
-                    noteContent += str(soup.body.div.extract())
-                    noteContent += '</en-note>'
-                    noteFilter = NoteStore.NoteFilter(notebookGuid=self.logNotebook.guid, words='intitle:"' + noteTitle + '"')
-                    existingNotes = self.noteStore.findNotes(self.developer_token, noteFilter, 0, 1)
-                    if existingNotes.totalNotes > 0:
-                        note = existingNotes.notes[0]
-                        note = self.noteStore.getNote(self.developer_token, note.guid, True, False, False, False)
-                        if note.content == noteContent:
-                            print "Note is up to date. Ignoring."
-                            continue
-                    else:
-                        note = Types.Note()
-                    note.title = noteTitle
-                    note.content = noteContent
-                    note.notebookGuid = self.logNotebook.guid
-                    if existingNotes.totalNotes > 0:
-                        note = self.noteStore.updateNote(self.developer_token, note)
-                        print "Updated note: ", note.guid
-                    else:
-                        note = self.noteStore.createNote(self.developer_token, note)
-                        print "Created note: ", note.guid
+                    self._import_log_file(filePath)
         print "Importing complete."
+
+    def _import_log_file(self, filePath):
+        print filePath
+        soup = BeautifulSoup(open(filePath))
+        noteTitle = soup.title.get_text()
+        cleanLog = bleach.clean(soup.body.prettify(), tags=self.PERMITTED_TAGS, attributes={'*': ['color', 'size']}, strip=True)
+        cleanLog = "<div>" + cleanLog + "</div>"
+        soup = BeautifulSoup(cleanLog)
+        noteContent = '<?xml version="1.0" encoding="UTF-8"?>'
+        noteContent += '<!DOCTYPE en-note SYSTEM ' \
+            '"http://xml.evernote.com/pub/enml2.dtd">'
+        noteContent += '<en-note>'
+        noteContent += str(soup.body.div.extract())
+        noteContent += '</en-note>'
+        noteFilter = NoteStore.NoteFilter(notebookGuid=self.logNotebook.guid, words='intitle:"' + noteTitle + '"')
+        existingNotes = self.noteStore.findNotes(self.developer_token, noteFilter, 0, 1)
+        if existingNotes.totalNotes > 0:
+            note = existingNotes.notes[0]
+            note = self.noteStore.getNote(self.developer_token, note.guid, True, False, False, False)
+            if note.content == noteContent:
+                print "Note is up to date. Ignoring."
+                return
+        else:
+            note = Types.Note()
+        note.title = noteTitle
+        note.content = noteContent
+        note.notebookGuid = self.logNotebook.guid
+        if existingNotes.totalNotes > 0:
+            note = self.noteStore.updateNote(self.developer_token, note)
+            print "Updated note: ", note.guid
+        else:
+            note = self.noteStore.createNote(self.developer_token, note)
+            print "Created note: ", note.guid
 
 logDaemon = PythonLogDaemon()
 daemonRunner = runner.DaemonRunner(logDaemon)
