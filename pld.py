@@ -107,6 +107,8 @@ class PythonLogImporter():
                     else:
                         note = self.noteStore.createNote(self.developer_token, note)
                         print "Created note: ", note.guid
+        print "Importing complete."
+
 logDaemon = PythonLogDaemon()
 daemonRunner = runner.DaemonRunner(logDaemon)
 daemonRunner.do_action()
