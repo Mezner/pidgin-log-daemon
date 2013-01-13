@@ -95,7 +95,10 @@ class PythonLogImporter():
                     existingNotes = self.noteStore.findNotes(self.developer_token, noteFilter, 0, 1)
                     if existingNotes.totalNotes > 0:
                         note = existingNotes.notes[0]
-                        print "Found existing note:", note.guid
+                        note = self.noteStore.getNote(self.developer_token, note.guid, True, False, False, False)
+                        if note.content == noteContent:
+                            print "Note is up to date. Ignoring."
+                            continue
                     else:
                         note = Types.Note()
                     note.title = noteTitle
