@@ -71,8 +71,6 @@ class PythonLogImporter():
             print "Pidgin log notebook does not exist. Creating..."
             logNotebook = Types.Notebook(name="Pidgin Log")
             logNotebook = noteStore.createNotebook(self.developer_token, logNotebook)
-        note = Types.Note()
-        note.notebookGuid = logNotebook.guid
         for root, subFolders, files in os.walk(self.log_directory):
             for filename in files:
                 extension = os.path.splitext(filename)[-1].lower()
@@ -80,20 +78,32 @@ class PythonLogImporter():
                     filePath = os.path.join(root, filename)
                     print filePath
                     soup = BeautifulSoup(open(filePath))
-                    note.title = soup.title.get_text()
+                    noteTitle = soup.title.get_text()
                     cleanLog = bleach.clean(soup.body.prettify(), tags=PERMITTED_TAGS, attributes={'*': ['color', 'size']}, strip=True)
                     cleanLog = "<div>" + cleanLog + "</div>"
                     soup = BeautifulSoup(cleanLog)
-                    note.content = '<?xml version="1.0" encoding="UTF-8"?>'
-                    note.content += '<!DOCTYPE en-note SYSTEM ' \
+                    noteContent = '<?xml version="1.0" encoding="UTF-8"?>'
+                    noteContent += '<!DOCTYPE en-note SYSTEM ' \
                         '"http://xml.evernote.com/pub/enml2.dtd">'
-                    note.content += '<en-note>'
-                    note.content += str(soup.body.div.extract())
-                    note.content += '</en-note>'
-                    createdNote = noteStore.createNote(self.developer_token, note)
-                    print "Successfully created a new note with GUID: ", createdNote.guid
-                    os.remove(filePath)
-                    print "Removed file."
+                    noteContent += '<en-note>'
+                    noteContent += str(soup.body.div.extract())
+                    noteContent += '</en-note>'
+                    noteFilter = NoteStore.NoteFilter(notebookGuid=logNotebook.guid, words='intitle:"' + noteTitle + '"')
+                    existingNotes = noteStore.findNotes(self.developer_token, noteFilter, 0, 1)
+                    if existingNotes.totalNotes > 0:
+                        note = existingNotes.notes[0]
+                        print "Found existing note:", note.guid
+                    else:
+                        note = Types.Note()
+                    note.title = noteTitle
+                    note.content = noteContent
+                    note.notebookGuid = logNotebook.guid
+                    if existingNotes.totalNotes > 0:
+                        note = noteStore.updateNote(self.developer_token, note)
+                        print "Updated note: ", note.guid
+                    else:
+                        note = noteStore.createNote(self.developer_token, note)
+                        print "Created note: ", note.guid
 logDaemon = PythonLogDaemon()
 daemonRunner = runner.DaemonRunner(logDaemon)
 daemonRunner.do_action()
