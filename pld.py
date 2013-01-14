@@ -16,6 +16,7 @@ from bs4 import BeautifulSoup, NavigableString
 import bleach
 import os
 from logsettings import *
+import re
 
 class PythonLogDaemon():
     def __init__(self):
@@ -41,6 +42,7 @@ class PythonLogImporter():
         self.log_directory = log_directory
         self.PERMITTED_TAGS = ['a', 'abbr','acronym','address','area','b','bdo','big','blockquote','br','caption','center','cite','code','col','colgroup','dd','del','dfn','div','dl','dt','em','font','h1','h2','h3','h4','h5','h6','hr','i','img','ins','kbd','li','map','ol','p','pre','q','s','samp','small','span','strike','strong','sub','sup','table','tbody','td','tfoot','th','thead','title','tr','tt','u','ul','var','xmp', 'br/']
         self.logNotebookName = LOG_NOTEBOOK_NAME
+        self.dateRe = re.compile(r"Conversation with .* at (?P<date>.+) on")
 
     def startup(self):
         evernoteHost = "www.evernote.com"
@@ -100,6 +102,7 @@ class PythonLogImporter():
         else:
             note = Types.Note()
         note.title = noteTitle
+        note.created = self.__get_create_time_from_title(noteTitle)
         note.content = noteContent
         note.notebookGuid = self.logNotebook.guid
         if existingNotes.totalNotes > 0:
@@ -120,6 +123,14 @@ class PythonLogImporter():
         noteContent += str(soup.body.div.extract())
         noteContent += '</en-note>'
         return noteContent
+
+    def __get_create_time_from_title(self, title):
+        timeFormat = "%a %d %b %Y %I:%M:%S %p %Z"
+        match = self.dateRe.search(title)
+        dateStr = match.group('date')
+        logTime = time.strptime(dateStr, timeFormat)
+        # Evernote expects things in milliseconds despite not using the detail
+        return time.mktime(logTime) * 1000
 
 logDaemon = PythonLogDaemon()
 daemonRunner = runner.DaemonRunner(logDaemon)
