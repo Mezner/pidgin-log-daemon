@@ -132,6 +132,7 @@ class PythonLogImporter():
         # Evernote expects things in milliseconds despite not using the detail
         return time.mktime(logTime) * 1000
 
-logDaemon = PythonLogDaemon()
-daemonRunner = runner.DaemonRunner(logDaemon)
-daemonRunner.do_action()
+if __name__ == '__main__':
+    logDaemon = PythonLogDaemon()
+    daemonRunner = runner.DaemonRunner(logDaemon)
+    daemonRunner.do_action()
